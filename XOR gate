@@ -1,0 +1,61 @@
+import numpy as np
+
+def unitStep(v):
+    return 1 if v >= 0 else 0
+
+def perceptronModel(x, w, b):
+    v = np.dot(w, x) + b
+    return unitStep(v)
+
+def train_perceptron(X, y, w, b, learning_rate=0.01, epochs=10):
+    for epoch in range(epochs):
+        for i in range(len(X)):
+            y_pred = perceptronModel(X[i], w, b)
+            error = y[i] - y_pred
+            if error != 0:
+             w += learning_rate * error * X[i]
+             b += learning_rate * error
+    return w, b
+
+def NOT_logicFunction(x):
+    wNOT = -1
+    bNOT = 0.5
+    return perceptronModel(x, wNOT, bNOT)
+
+def AND_logicFunction(x):
+    wAND = np.array([1, 1])
+    bAND = -1.5
+    return perceptronModel(x, wAND, bAND)
+
+def OR_logicFunction(x):
+    wOR = np.array([1, 1])
+    bOR = -0.5
+    return perceptronModel(x, wOR, bOR)
+
+def XOR_logicFunction(x):
+    # Train the NOT gate
+    wNOT, bNOT = train_perceptron(np.array([[0], [1]]), np.array([1, 0]), -1, 0.5)
+
+    # Train the AND gate
+    X_AND = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
+    y_AND = np.array([0, 0, 0, 1])
+    wAND, bAND = train_perceptron(X_AND, y_AND, np.array([1, 1]), -1.5)
+
+    # Train the OR gate
+    y_OR = np.array([0, 1, 1, 1])
+    wOR, bOR = train_perceptron(X_AND, y_OR, np.array([1, 1]), -0.5)
+
+    # Calculate outputs for the XOR function
+    y1 = AND_logicFunction(x)
+    y2 = OR_logicFunction(x)
+    y3 = NOT_logicFunction(y1)
+
+    final_x = np.array([y2, y3])
+    finalOutput = AND_logicFunction(final_x)
+    return finalOutput
+
+X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
+
+# Test the XOR function
+for i in range(len(X)):
+    print(f"XOR({X[i][0]}, {X[i][1]}) = {XOR_logicFunction(X[i])}")
